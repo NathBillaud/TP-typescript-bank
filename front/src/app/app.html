@@ -1,0 +1,71 @@
+<main>
+  <h1>Bank</h1>
+
+  @if (error(); as message) {
+    <p class="error" role="alert">{{ message }}</p>
+  }
+
+  <section>
+    <h2>Utilisateurs</h2>
+
+    @if (loadingUsers()) {
+      <p>Chargement...</p>
+    } @else if (users().length === 0) {
+      <p>Aucun utilisateur.</p>
+    } @else {
+      <ul class="list">
+        @for (user of users(); track user._id) {
+          <li [class.selected]="selectedUser()?._id === user._id">
+            <button type="button" class="link" (click)="selectUser(user)">
+              {{ user.firstName }} {{ user.lastName }}
+            </button>
+            <span class="muted">{{ user.email }}</span>
+            <button type="button" class="danger" (click)="removeUser(user)">Supprimer</button>
+          </li>
+        }
+      </ul>
+    }
+
+    <form class="form" (ngSubmit)="addUser()">
+      <h3>Nouvel utilisateur</h3>
+      <input name="firstName" placeholder="Prénom" [(ngModel)]="newUser.firstName" required />
+      <input name="lastName" placeholder="Nom" [(ngModel)]="newUser.lastName" required />
+      <input name="email" type="email" placeholder="E-mail" [(ngModel)]="newUser.email" required />
+      <button type="submit">Ajouter</button>
+    </form>
+  </section>
+
+  @if (selectedUser(); as user) {
+    <section>
+      <h2>Comptes de {{ user.firstName }} {{ user.lastName }}</h2>
+
+      @if (accounts().length === 0) {
+        <p>Aucun compte.</p>
+      } @else {
+        <ul class="list">
+          @for (account of accounts(); track account._id) {
+            <li>
+              <span>{{ account.label || 'Sans libellé' }}</span>
+              <span class="muted">{{ account.iban }}</span>
+              <span>{{ typeLabels[account.type] }}</span>
+              <strong>{{ formatEuros(account.balanceCents) }}</strong>
+              <button type="button" class="danger" (click)="removeAccount(account)">Supprimer</button>
+            </li>
+          }
+        </ul>
+      }
+
+      <form class="form" (ngSubmit)="addAccount()">
+        <h3>Nouveau compte</h3>
+        <input name="iban" placeholder="IBAN" [(ngModel)]="newAccount.iban" required />
+        <select name="type" [(ngModel)]="newAccount.type">
+          <option value="checking">Compte courant</option>
+          <option value="savings">Épargne</option>
+        </select>
+        <input name="label" placeholder="Libellé (optionnel)" [(ngModel)]="newAccount.label" />
+        <input name="balance" type="number" min="0" step="0.01" placeholder="Solde initial (€)" [(ngModel)]="newAccount.balanceEuros" />
+        <button type="submit">Ajouter</button>
+      </form>
+    </section>
+  }
+</main>
